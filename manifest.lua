@@ -22,6 +22,10 @@ manifest =
 		{
 			path = "EntityDefs.lua"
 		},
+		['ExploreState.lua'] =
+		{
+			path = "ExploreState.lua"
+		},
 		['larger_map.lua'] = 
 		{
 			path = "larger_map.lua"

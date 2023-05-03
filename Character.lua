@@ -55,3 +55,27 @@ function Character:Create(def, map)
 
 	return this
 end
+
+
+-- get the coordinates of the tile the player is facing
+function GetFacingTileCoords(character)
+
+	-- change the facing information into a tile offset
+	local xInc = 0
+	local yInc = 0
+
+	if character.Facing == "left" then
+		xInc = -1
+	elseif character.Facing == "right" then
+		xInc = 1
+	elseif character.Facing == "up" then
+		yInc = -1
+	elseif character.Facing == "down" then
+		yInc = 1
+	end
+
+	local x = self..Entity.TileX + xInc
+	local y = self.Entity.TileY + yInc
+
+	return x, y
+end

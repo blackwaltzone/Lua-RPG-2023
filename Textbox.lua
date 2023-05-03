@@ -41,6 +41,7 @@ function Textbox:Create(params)
         AppearTween = Tween:Create(0, 1, 0.4, Tween.EaseOutCirc),
         Wrap = params.wrap or -1,
         Children = params.children or {},
+        SelectionMenu = params.selectionMenu,
     }
 
     this.ContinueMark:SetTexture(Texture.Find("continue_caret.png"))
@@ -54,6 +55,18 @@ function Textbox:Create(params)
 
     setmetatable(this, self)
     return this
+end
+
+
+-- handle textbox input
+function TextBox:HandleInput()
+    if self.SelectionMenu then
+        self.SelectionMenu:HandleInput()
+    end
+
+    if Keyboard:JustPressed(KEY_SPACE) then
+        self:OnClick()
+    end
 end
 
 
@@ -88,6 +101,18 @@ function Textbox:Render(renderer)
         self.Chunks[self.ChunkIndex],
         Vector.Create(1, 1, 1, 1),
         self.Wrap * scale)
+
+    -- render the selection menu
+    if self.SelectionMenu then
+        renderer:AlignText("left", "center")
+        local menuX = textLeft
+        local menuY = bottom + self.SelectionMenu:GetHeight()
+        menuY = menuY + self.Bounds.bottom
+        self.SelectionMenu.X = menuX
+        self.SelectionMenu.Y = menuY
+        self.SelectionMenu.Scale = scale
+        self.SelectionMenu:Render(renderer)
+    end
 
     -- draw caret if more text to render
     if self.ChunkIndex < #self.Chunks then
@@ -148,120 +173,4 @@ end
 function Textbox:IsDead()
     return self.AppearTween:IsFinished()
         and self.AppearTween:Value() == 0
-end
-
-
--- create a textbox of fixed size and position
-function CreateFixed(renderer, x, y, width, height, text, params)
-    
-    params = params or {},
-    local avatar = params.avatar
-    local title = params.title
-
-    local padding = 10
-    local textScale = 1.5
-    local panelTileSize = 3
-
-    local wrap = width - padding * 2
-    local boundsTop = padding
-    local boundsLeft = padding
-
-    local children = {}
-
-    if avatar then
-        boundsLeft = avatar:GetWidth() + padding * 2
-        wrap = width - (boundsLeft) - padding
-        local sprite = Sprite.Create()
-        sprite:SetTexture(avatar)
-        table.insert(children,
-        {
-            type = "sprite",
-            sprite = sprite,
-            x = avatar:GetWidth() / 2 + padding,
-            y = -avatar:GetHeight() / 2
-        })
-    end
-
-    if title then
-        -- adjust the top
-        local size = renderer:MeasureText(title, wrap)
-        boundsTop = size:Y() + padding * 2
-
-        table.insert(children,
-        {
-            type = "text",
-            text = title,
-            x = 0,
-            y = size:Y() + padding
-        })
-    end
-
-    renderer:ScaleText(textScale)
-
-    --
-    -- Section text into box-sized chunks
-    --
-    -- height of a line of text
-    local faceHeight = math.ceil(renderer:MeasureText(text):Y())
-
-    -- takes a string, index, wrap width to return length of text
-    local start, finish = Renderer:NextLine(text, 1, wrap)
-
-    -- height of the textbounds of the rectangle
-    -- aka. how many lines of text fit in the box with the padding
-    local boundsHeight = height - (boundsTop + boundsBottom)
-    local currentHeight = faceHeight
-
-    -- stores each textbox chunk
-    local chunks = {{string.sum(text, start, finish)}}
-    
-    -- break text into lines and fill chunks table
-    while finish < #text do
-        start, finish = Renderer:NextLine(text, finish, wrap)
-
-        -- if we're going to overflow
-        if (currentHeight + faceHeight) > boundsHeight then
-            -- make a new entry
-            currentHeight = 0
-            table.insert(chunks, {string.sub(text, start, finish)})
-        else
-            table.insert(chunks[#chunks], string.sub(text, start, finish))
-        end
-
-        currentHeight = currentHeight + faceHeight
-    end
-
-    -- Make each textbox be represented by one string
-    for k, v in ipairs(chunks) do
-        chunks[k] = table.concat(v)
-    end
-
-
-    return Textbox:Create
-    {
-        text = chunks,
-        textScale = textScale,
-        size =
-        {
-            left = x - width / 2,
-            right = x + width / 2,
-            top = y + height / 2,
-            bottom = y - height / 2
-        },
-        textBounds =
-        {
-            left = padding,
-            right = -padding,
-            top = -padding,
-            bottom = padding,
-        },
-        panelArgs =
-        {
-            texture = Texture.Find("gradient_panel.png"),
-            size = panelTileSize,
-        },
-
-        wrap = wrap,
-        children = children
-    }
 end
