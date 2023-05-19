@@ -39,8 +39,7 @@ function InGameMenuState:Create(stack)
 		end,
 		['items'] =
 		function()
-			-- return ItemMenuState:Create(this)
-			return this.StateMachine.Empty
+			return ItemMenuState:Create(this)
 		end,
 		['magic'] =
 		function()

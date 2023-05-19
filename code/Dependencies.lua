@@ -70,5 +70,9 @@ Apply(
         "MenuLayout.lua",
         "InGameMenuState.lua",
         "FrontMenuState.lua",
+        "ItemDB.lua",
+        "ItemMenuState.lua",
+        "Icons.lua",
+        "World.lua"
     },
     function(v) Asset.Run(v) end)
